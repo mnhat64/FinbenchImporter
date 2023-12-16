@@ -10,7 +10,6 @@ import java.util.UUID;
 public class ImportEdgeHelper {
     public static DataSet<ImportEdge<String>> createEdgesFromCSV(
             DataSet<Tuple4<String, String, String, String>> edgeCSV) {
-
         return edgeCSV.map(new MapFunction<Tuple4<String, String, String, String>, ImportEdge<String>>() {
             @Override
             public ImportEdge<String> map(Tuple4<String, String, String, String> csvRecord) throws Exception {

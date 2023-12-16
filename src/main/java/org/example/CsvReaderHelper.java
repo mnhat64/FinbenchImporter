@@ -15,4 +15,5 @@ public class CsvReaderHelper {
                 .ignoreFirstLine()
                 .types(String.class, String.class, String.class, String.class);
     }
+
 }
