@@ -1,5 +1,8 @@
-/Users/pmnha/TemporalGraph/src/main/java/org/example/ImportEdgeHelper.java
-/Users/pmnha/TemporalGraph/src/main/java/org/example/Testing.java
-/Users/pmnha/TemporalGraph/src/main/java/org/example/CsvReaderHelper.java
-/Users/pmnha/TemporalGraph/src/main/java/org/example/FinbenchImporter.java
-/Users/pmnha/TemporalGraph/src/main/java/org/example/ImportVertexHelper.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/edge/RelationReader.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/GraphBuilder.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/edge/EdgeMapping.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/vertex/EntitiesMapping.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/query/SimpleQuery.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/datasource/DataSourceExtractor.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/util/HelperFunction.java
+/Users/pmnha/TemporalGraph/src/main/java/org/example/vertex/EntitiesReader.java

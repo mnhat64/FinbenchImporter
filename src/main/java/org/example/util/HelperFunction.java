@@ -1,12 +1,19 @@
 package org.example.util;
 
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.typeinfo.TypeHint;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.gradoop.common.model.impl.id.GradoopId;
+import org.gradoop.temporal.model.impl.pojo.TemporalVertex;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
+
 
 public class HelperFunction {
+
     public static long convertTimeToUnix(String timestamp) throws ParseException {
         int millisIndex = timestamp.lastIndexOf('.');
         int missingZeros = 3 - (timestamp.length() - millisIndex - 1);
@@ -26,37 +33,11 @@ public class HelperFunction {
         return parsedDate.getTime();
     }
 
-    public static GradoopId createGradoopID(String type, String numberString) {
-        String prefix;
-        switch (type) {
-            case "Person":
-                prefix = "000A";
-                break;
-            case "Loan":
-                prefix = "000B";
-                break;
-            case "Company":
-                prefix = "000C";
-                break;
-            case "Account":
-                prefix = "000D";
-                break;
-            case "Medium":
-                prefix = "000E";
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid type: " + type);
-        }
-
-        long number;
-        try {
-            number = Long.parseLong(numberString);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid number format: " + numberString, e);
-        }
-
-        String hexRepresentation = Long.toHexString(number);
-        String paddedHex = String.format("%1$" + 20 + "s", hexRepresentation).replace(' ', '0');
-        return GradoopId.fromString(prefix + paddedHex);
+    public static DataSet<Tuple2<String, GradoopId>>  generateIdPairs(DataSet<TemporalVertex> sourceVertices, DataSet<TemporalVertex> targetVertices) {
+        return sourceVertices
+                .union(targetVertices)
+                .map(vertex -> new Tuple2<>(vertex.getPropertyValue("ID").toString(), vertex.getId()))
+                .returns(new TypeHint<Tuple2<String, GradoopId>>() {});
     }
+
 }

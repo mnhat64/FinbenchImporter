@@ -1,68 +1,49 @@
 package org.example;
 
-import org.apache.flink.api.common.JobExecutionResult;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.example.datasource.DataSourceExtractor;
-import org.example.edge.RelationReader;
-import org.example.query.SimpleQuery;
-import org.example.vertex.EntitiesReader;
 import org.gradoop.flink.util.GradoopFlinkConfig;
 import org.gradoop.temporal.io.impl.csv.TemporalCSVDataSink;
 import org.gradoop.temporal.model.impl.TemporalGraph;
-import org.gradoop.temporal.model.impl.TemporalGraphFactory;
 import org.gradoop.temporal.model.impl.pojo.TemporalEdge;
 import org.gradoop.temporal.model.impl.pojo.TemporalVertex;
 import org.gradoop.temporal.util.TemporalGradoopConfig;
 
-import java.io.File;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-
 
 public class GraphBuilder {
-
     public static void main (String[] args) throws Exception {
+        Options cliOption = new Options();
+        cliOption.addOption(new Option("i", "inputPath", true, "Input path. (REQUIRED)"));
+        cliOption.addOption(new Option("o", "outputPath", true, "Output path. (REQUIRED)"));
+
+        CommandLine parsedOptions = new DefaultParser().parse(cliOption, args);
+        if (!(parsedOptions.hasOption('i') && parsedOptions.hasOption('o'))) {
+            System.err.println("No input- and output-path given.");
+            System.err.println("See --help for more infos.");
+            return;
+        }
+        final String inputPath = parsedOptions.getOptionValue('i');
+        final String outputPath = parsedOptions.getOptionValue('o');
+
+
+
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         GradoopFlinkConfig config = GradoopFlinkConfig.createConfig(env);
         TemporalGradoopConfig tConfig = TemporalGradoopConfig.fromGradoopFlinkConfig(config);
+        DataSourceExtractor dS = new DataSourceExtractor(env);
 
+        Tuple2<DataSet<TemporalVertex>, DataSet<TemporalEdge>> dataSource = dS.readingFinbench(inputPath);
+        TemporalGraph tg = tConfig.getTemporalGraphFactory().fromDataSets(dataSource.f0, dataSource.f1);
 
-        DataSourceExtractor dataSourceExtractor = new DataSourceExtractor(env);
-        Tuple2<DataSet<TemporalEdge>, DataSet<TemporalVertex>> dataSource = dataSourceExtractor.graphDataSourceExtractor("Person", "Loan", "Apply");
+        tg.writeTo(new TemporalCSVDataSink(outputPath, config), true);
 
-
-        TemporalGraphFactory tgp = new TemporalGraphFactory(tConfig);
-        TemporalGraph tg = tgp.fromDataSets(dataSource.f1, dataSource.f0);
-        tg.print();
-
-
-
-        /*
-
-        String personLoanPath = "/Users/pmnha/TemporalGraph/src/main/resources/relations/PersonApplyLoan.csv";
-
-        DataSourceExtractor dataSourceExtractor = new DataSourceExtractor(env);
-        Tuple2<DataSet<TemporalEdge>, DataSet<TemporalVertex>> dataSource = dataSourceExtractor.graphDataSourceExtractor("Person", "Loan", personLoanPath);
-
-        String targetDirectory = "src/main/resources/graphs/";
-        String fileNameWithoutExtension = new File(personLoanPath).getName().replaceFirst("[.][^.]+$", "");
-        String dotFilePath = targetDirectory + fileNameWithoutExtension;
-
-        TemporalGraphFactory tgp = new TemporalGraphFactory(tConfig);
-        TemporalGraph graph = tgp.fromDataSets(dataSource.f1, dataSource.f0);
-
-        TemporalCSVDataSink ds = new TemporalCSVDataSink(dotFilePath, config);
-
-        graph.writeTo(ds);
-        graph.print();
-
-        JobExecutionResult result = env.execute("Export TemporalGraph to PDF");
-        System.out.println("Job took " + result.getNetRuntime() + " milliseconds");
-        */
-
+        env.execute("Import Finbench in Gradoop");
     }
-
 }
